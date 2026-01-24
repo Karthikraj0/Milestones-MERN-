@@ -21,22 +21,25 @@ export const getAdminMilestones = async () => {
 };
 
 export const approveMilestone = async (id) => {
-  const res = await api.patch(`/admin/milestones/${id}/approve`);
+  const res = await api.put(`/admin/milestones/${id}/approve`);
   return res.data;
 };
 
 export const rejectMilestone = async (id, reason) => {
-  const res = await api.patch(`/admin/milestones/${id}/reject`, { reason });
+  const res = await api.put(`/admin/milestones/${id}/reject`, { reason });
   return res.data;
 };
+
 export const createAdminMilestone = async (payload) => {
   const res = await api.post("/admin/milestones", payload);
   return res.data;
 };
+
 export const deleteAdminMilestone = async (id) => {
   const res = await api.delete(`/admin/milestones/${id}`);
   return res.data;
 };
+
 export const editAdminMilestone = async (id, payload) => {
   const res = await api.put(`/admin/milestones/${id}`, payload);
   return res.data;
