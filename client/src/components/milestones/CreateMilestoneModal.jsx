@@ -1,64 +1,116 @@
 import { useEffect, useState } from "react";
 
-export default function CreateMilestoneModal({ open, setOpen, onCreate }) {
+export default function CreateMilestoneModal({ open, setOpen, onCreate, initialPhase }) {
   const [title, setTitle] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [assignedTo, setAssignedTo] = useState("");
+  const [phase, setPhase] = useState("");
+  const [error, setError] = useState("");
+
+  const isNewPhase = !initialPhase;
 
   useEffect(() => {
-    if (!open) {
+    if (open) {
+      if (initialPhase) {
+        setPhase(initialPhase);
+      } else {
+        setPhase(""); // Empty for new phase so user types it
+      }
+    } else {
       setTitle("");
       setDueDate("");
       setAssignedTo("");
+      setPhase("");
+      setError("");
     }
-  }, [open]);
+  }, [open, initialPhase]);
 
   if (!open) return null;
 
   const handleCreate = async () => {
-    if (!title || !dueDate || !assignedTo) return;
-    await onCreate({ title, dueDate, assignedTo });
+    // If new phase, we need a phase name. If existing phase, phase is already set.
+    if (!title || !dueDate || !assignedTo || (isNewPhase && !phase)) {
+      setError(
+        isNewPhase
+          ? "Please fill in all fields (Phase Name, Milestone Title, Due Date, Assign To)."
+          : "Please fill in all fields (Title, Due Date, Assign To)."
+      );
+      return;
+    }
+    setError("");
+    await onCreate({ title, dueDate, assignedTo, phase });
     setOpen(false);
   };
 
   return (
     <div style={overlay}>
       <div style={modal}>
-        <h3 style={{ marginTop: 0 }}>Create Milestone</h3>
+        <h3 style={{ marginTop: 0, fontSize: 20 }}>
+          {isNewPhase ? "Start New Phase" : "Create Milestone"}
+        </h3>
+        {error && <div style={{ color: "#ef4444", marginBottom: 10, fontSize: 13 }}>{error}</div>}
 
+        {isNewPhase && (
+          <div style={{ marginBottom: 16 }}>
+            <label style={labelStyle}>New Phase Name</label>
+            <input
+              list="phase-options"
+              placeholder="e.g. Design, Development, Testing"
+              value={phase}
+              onChange={(e) => setPhase(e.target.value)}
+              style={input}
+            />
+            <datalist id="phase-options">
+              <option value="Frontend" />
+              <option value="Backend" />
+              <option value="Testing" />
+              <option value="Documentation" />
+            </datalist>
+          </div>
+        )}
+
+        {isNewPhase && <div style={{ borderTop: "1px solid #374151", margin: "16px 0", paddingTop: 16, fontSize: 13, color: "#9ca3af" }}>First Milestone Details</div>}
+
+        <label style={labelStyle}>Milestone Title</label>
         <input
-          placeholder="Title"
+          placeholder="e.g. Initial Setup"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           style={input}
         />
 
-        <input
-          type="date"
-          value={dueDate}
-          onChange={(e) => setDueDate(e.target.value)}
-          style={input}
-        />
+        <div style={{ marginBottom: 12 }}>
+          <label style={labelStyle}>Due Date</label>
+          <input
+            type="date"
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
+            style={{ ...input, marginBottom: 0 }}
+          />
+        </div>
 
+        <label style={labelStyle}>Assign To</label>
         <input
-          placeholder="Assign to (employee id/name)"
+          placeholder="employee id/name"
           value={assignedTo}
           onChange={(e) => setAssignedTo(e.target.value)}
           style={input}
         />
 
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 24 }}>
           <button style={btnSoft} onClick={() => setOpen(false)}>
             Cancel
           </button>
           <button style={btnCreate} onClick={handleCreate}>
-            Create
+            {isNewPhase ? "Create Phase" : "Create"}
           </button>
         </div>
       </div>
     </div>
   );
 }
+
+const labelStyle = { display: "block", marginBottom: 6, fontSize: 13, color: "#9ca3af", fontWeight: 500 };
 
 const overlay = {
   position: "fixed",
@@ -87,7 +139,8 @@ const input = {
   background: "transparent",
   color: "#e5e7eb",
   outline: "none",
-  marginBottom: 12
+  marginBottom: 12,
+  boxSizing: "border-box"
 };
 
 const btnSoft = {

@@ -12,8 +12,11 @@ const milestoneSchema = new mongoose.Schema(
     },
     adminComment: { type: String, default: "" },
     assignedTo: { type: String, required: true },
+    description: { type: String, default: "" },
+    links: { type: String, default: "" },
     createdBy: { type: String, required: true },
-    createdByRole: { type: String, required: true }
+    createdByRole: { type: String, required: true },
+    phase: { type: String, default: "Phase 1" }
   },
   { timestamps: true }
 );

@@ -44,3 +44,8 @@ export const editAdminMilestone = async (id, payload) => {
   const res = await api.put(`/admin/milestones/${id}`, payload);
   return res.data;
 };
+
+export const renamePhase = async (oldName, newName) => {
+  const res = await api.post("/admin/milestones/rename-phase", { oldName, newName });
+  return res.data;
+};

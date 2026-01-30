@@ -26,7 +26,7 @@ exports.rejectMilestone = async (req, res) => {
 };
 
 exports.createMilestoneAdmin = async (req, res) => {
-  const { title, dueDate, assignedTo } = req.body;
+  const { title, dueDate, assignedTo, phase } = req.body;
 
   if (!title || !dueDate || !assignedTo) {
     return res.status(400).json({ message: "title, dueDate, assignedTo required" });
@@ -40,7 +40,8 @@ exports.createMilestoneAdmin = async (req, res) => {
     adminComment: "",
     assignedTo,
     createdBy: req.user.id,
-    createdByRole: req.user.role
+    createdByRole: req.user.role,
+    phase: phase || "Phase 1"
   });
 
   res.status(201).json(created);
@@ -53,7 +54,7 @@ exports.deleteMilestone = async (req, res) => {
 };
 
 exports.editMilestoneAdmin = async (req, res) => {
-  const { title, dueDate, assignedTo, status, adminComment } = req.body;
+  const { title, dueDate, assignedTo, status, adminComment, phase } = req.body;
 
   const update = {};
 
@@ -61,6 +62,7 @@ exports.editMilestoneAdmin = async (req, res) => {
   if (dueDate !== undefined) update.dueDate = dueDate;
   if (assignedTo !== undefined) update.assignedTo = assignedTo;
   if (adminComment !== undefined) update.adminComment = adminComment;
+  if (phase !== undefined) update.phase = phase;
 
   if (status !== undefined) {
     const allowed = ["DRAFT", "SUBMITTED", "APPROVED", "REJECTED"];
@@ -73,4 +75,18 @@ exports.editMilestoneAdmin = async (req, res) => {
   const updated = await Milestone.findByIdAndUpdate(req.params.id, update, { new: true });
   if (!updated) return res.status(404).json({ message: "Milestone not found" });
   res.json(updated);
+};
+exports.renamePhase = async (req, res) => {
+  const { oldName, newName } = req.body;
+
+  if (!oldName || !newName) {
+    return res.status(400).json({ message: "oldName and newName required" });
+  }
+
+  const result = await Milestone.updateMany(
+    { phase: oldName },
+    { $set: { phase: newName } }
+  );
+
+  res.json({ message: "Updated", modifiedCount: result.modifiedCount });
 };
